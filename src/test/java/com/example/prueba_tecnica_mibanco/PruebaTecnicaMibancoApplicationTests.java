@@ -16,7 +16,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import com.example.prueba_tecnica_mibanco.model.Driver;
+import com.example.prueba_tecnica_mibanco.model.DriverDTO;
+import com.example.prueba_tecnica_mibanco.model.PrimaRequest;
 import com.example.prueba_tecnica_mibanco.model.UsageType;
+import com.example.prueba_tecnica_mibanco.model.Vehicle;
 import com.example.prueba_tecnica_mibanco.service.PersonService;
 
 import reactor.core.publisher.Mono;
@@ -47,7 +50,7 @@ class PruebaTecnicaMibancoApplicationTests {
 				List<UsageType> usageTypes = response.getResponseBody();
 				log.info("UsageType values:");
 				usageTypes.forEach(p -> {
-					log.info("Name: " + p.getName());
+					log.info("Name: ".concat(p.getName()));
 				});
 				
 				Assertions.assertThat(usageTypes).isNotEmpty();
@@ -88,7 +91,11 @@ class PruebaTecnicaMibancoApplicationTests {
 				List<Driver> drivers = response.getResponseBody();
 				log.info("Driver values:");
 				drivers.forEach(p -> {
-					log.info("Driver: " + p.getDni() + " => " + p.getApellido_paterno() + " " + p.getApellido_materno() + " " + p.getNombres());
+					log.info("Driver:".
+						concat(String.valueOf(p.getDni())).concat(" => ").
+						concat(p.getApellido_paterno()).concat(" ").
+						concat(p.getApellido_materno()).concat(" ").
+						concat(p.getNombres()));
 				});
 				Assertions.assertThat(drivers).isNotEmpty();
 			});
@@ -115,6 +122,62 @@ class PruebaTecnicaMibancoApplicationTests {
 	}
 	
 	@Test
+	void viewVehicleTest() {
+		
+		int vehicleId = 8;
+		
+		client.get()
+			.uri("/vehicle" + "/{id}", Collections.singletonMap("id", String.valueOf(vehicleId)))
+			.accept(MediaType.APPLICATION_JSON)
+			.exchange()
+			.expectStatus().isOk()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBody(Vehicle.class)
+			.consumeWith(response -> {
+				Vehicle p = response.getResponseBody();
+				Assertions.assertThat(p.getId() > 0).isTrue();
+			});
+			
+	}
+	
+	@Test
+	void viewDriverVehicleTest() {
+		
+		client.get()
+			.uri("/driver" + "/7/vehicle/8")
+			.accept(MediaType.APPLICATION_JSON)
+			.exchange()
+			.expectStatus().isOk()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBody(DriverDTO.class)
+			.consumeWith(response -> {
+				DriverDTO p = response.getResponseBody();
+				Assertions.assertThat(p.getIdDriver() > 0).isTrue();
+			});
+			
+	}
+	
+	@Test
+	void viewCalculatePrimaTest() {
+		PrimaRequest prima = new PrimaRequest();
+		prima.setPrimaBase(500);
+		prima.setDriverId(7L);
+		prima.setVehicleId(8L);
+
+		client.post()
+			.uri("/calcular")
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Mono.just(prima), PrimaRequest.class)
+			.exchange()
+			.expectStatus().isOk()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBody()
+			.jsonPath("$.costo_seguro_vehiculo").value(value -> {
+				Assertions.assertThat(Double.parseDouble(value.toString())).isGreaterThan(0);
+			});
+	}
+	
+	@Test
 	void createDriverTest() {
 		String username = "FMALPARTIDA";
 		String password = "123456";
@@ -128,7 +191,7 @@ class PruebaTecnicaMibancoApplicationTests {
 			.expectBody()
 			.jsonPath("$.token").value(tokenValue -> {
 				Assertions.assertThat(tokenValue).isInstanceOf(String.class);
-				log.info("Token: " + tokenValue);
+				log.info("Token: ".concat(tokenValue.toString()));
 			})
 			.returnResult().getResponseBody().toString();
 		
@@ -160,5 +223,49 @@ class PruebaTecnicaMibancoApplicationTests {
 			});
 	}
 	
+	@Test
+	void createVehicleTest() {
+		String username = "FMALPARTIDA";
+		String password = "123456";
+
+		String token = client.post()
+			.uri("/login")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue("{\"user\": \"" + username + "\", \"pwd\": \"" + password + "\"}")
+			.exchange()
+			.expectStatus().isOk()
+			.expectBody()
+			.jsonPath("$.token").value(tokenValue -> {
+				Assertions.assertThat(tokenValue).isInstanceOf(String.class);
+				log.info("Token: ".concat(tokenValue.toString()));
+			})
+			.returnResult().getResponseBody().toString();
+		
+		int minAnioVehicle = 1900; // El número más pequeño de 8 dígitos
+        int maxAnioVehicle = 2025; // El número más grande de 8 dígitos
+
+        Random randomAnioVehicle = new Random();
+        int numeroAleatorioAnioVehicle = randomAnioVehicle.nextInt(maxAnioVehicle - minAnioVehicle + 1) + minAnioVehicle;
+        
+        Vehicle newVehicle = new Vehicle();
+        newVehicle.setDriver_id((long) 1);
+        newVehicle.setMarca("Toyota");
+        newVehicle.setModelo("Rav 4");
+        newVehicle.setUsage_type_id((long) 1);
+        newVehicle.setYear(numeroAleatorioAnioVehicle);
+
+		client.post()
+			.uri("/vehicle")
+			.header("Authorization", "Bearer " + token)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Mono.just(newVehicle), Vehicle.class)
+			.exchange()
+			.expectStatus().isCreated()
+			.expectHeader().contentType(MediaType.APPLICATION_JSON)
+			.expectBody()
+			.consumeWith(response -> {
+				Assertions.assertThat(response.getStatus().is2xxSuccessful()).isTrue();
+			});
+	}
 	
 }

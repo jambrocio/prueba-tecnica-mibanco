@@ -12,6 +12,6 @@ public class Constantes {
 	public static final String COSTO_SEGURO_VEHICULO = "costo_seguro_vehiculo";
 	
 	private Constantes() {
-		throw new IllegalStateException("Utility class");
+		super();
 	}
 }

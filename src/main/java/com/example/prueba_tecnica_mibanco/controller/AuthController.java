@@ -60,7 +60,6 @@ public class AuthController {
 	                
 	            	return new ResponseEntity<>(body,HttpStatus.OK);
 	            })
-	            //.switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
 	            .switchIfEmpty(Mono.fromSupplier(() -> {
 	                Map<String, String> errorBody = new HashMap<>();
 	                errorBody.put("message", "Error en la autenticación: username o password incorrecto");
