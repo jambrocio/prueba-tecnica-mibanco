@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebExchangeBindException;
 
 import com.example.prueba_tecnica_mibanco.model.Driver;
+import com.example.prueba_tecnica_mibanco.model.DriverDTO;
 import com.example.prueba_tecnica_mibanco.model.PrimaRequest;
 import com.example.prueba_tecnica_mibanco.model.UsageType;
 import com.example.prueba_tecnica_mibanco.model.Vehicle;
 import com.example.prueba_tecnica_mibanco.service.PersonService;
+import com.example.prueba_tecnica_mibanco.util.Constantes;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -62,6 +64,13 @@ public class PersonController {
 		return new ResponseEntity<>(personService.driver(Long.valueOf(id)),HttpStatus.OK);
 	}
 	
+	@Tag(name = "findDriverVehicle", description = "")
+	@Operation(summary = "Find a driver and vehicle", description = "Find a driver and vehicle in the system")
+	@GetMapping(value="driver/{idDriver}/vehicle/{idVehicle}")
+	public ResponseEntity<Mono<DriverDTO>> driverVehicle(@PathVariable String idDriver, @PathVariable String idVehicle){
+		return new ResponseEntity<>(personService.driverCustom(Long.valueOf(idDriver), Long.valueOf(idVehicle)),HttpStatus.OK);
+	}
+	
 	@Tag(name = "createDriver", description = "")
 	@Operation(summary = "Create a new driver", description = "Add a new driver to the system")
 	@PostMapping(value="driver",consumes=MediaType.APPLICATION_JSON_VALUE)
@@ -72,9 +81,9 @@ public class PersonController {
 		return monoDriver.flatMap(driver -> {
 			
 			return personService.altaDriver(driver).map(p -> {
-				respuesta.put("driver", p);
-				respuesta.put("mensaje", "Driver creado con exito");
-				respuesta.put("tmestamp", new Date());
+				respuesta.put(Constantes.DRIVER, p);
+				respuesta.put(Constantes.MESSAGE, "Driver creado con exito");
+				respuesta.put(Constantes.TIMESTAMP, new Date());
 				
 				return ResponseEntity
 					.created(URI.create("driver/".concat(String.valueOf(p.getId()))))
@@ -91,9 +100,9 @@ public class PersonController {
 					.map(fieldError -> "El campo " + fieldError.getField() + " " + fieldError.getDefaultMessage())
 					.collectList()
 					.flatMap(list -> {
-						respuesta.put("errors", list);
-						respuesta.put("timestamp", new Date());
-						respuesta.put("status", HttpStatus.BAD_REQUEST.value());
+						respuesta.put(Constantes.ERRORS, list);
+						respuesta.put(Constantes.TIMESTAMP, new Date());
+						respuesta.put(Constantes.STATUS, HttpStatus.BAD_REQUEST.value());
 						return Mono.just(ResponseEntity.badRequest().body(respuesta));
 					});
 			
@@ -123,9 +132,9 @@ public class PersonController {
 			return Mono.zip(usageTypeMono, driverMono)
 				.flatMap(tuple -> personService.altaVehicle(vehicle)
 					.map(p -> {
-						respuesta.put("vehicle", p);
-						respuesta.put("mensaje", "Vehicle creado con exito");
-						respuesta.put("tmestamp", new Date());
+						respuesta.put(Constantes.VEHICLE, p);
+						respuesta.put(Constantes.MESSAGE, "Vehicle creado con exito");
+						respuesta.put(Constantes.TIMESTAMP, new Date());
 						return ResponseEntity
 							.created(URI.create("vehicle/".concat(String.valueOf(p.getId()))))
 							.contentType(MediaType.APPLICATION_JSON)
@@ -133,15 +142,17 @@ public class PersonController {
 					})
 				)
 				.onErrorResume(e -> {
-					respuesta.put("errors", e.getMessage());
-					respuesta.put("timestamp", new Date());
-					respuesta.put("status", HttpStatus.BAD_REQUEST.value());
+					respuesta.put(Constantes.ERRORS, e.getMessage());
+					respuesta.put(Constantes.TIMESTAMP, new Date());
+					respuesta.put(Constantes.STATUS, HttpStatus.BAD_REQUEST.value());
 					return Mono.just(ResponseEntity.badRequest().body(respuesta));
 				});
 		});
 
 	}
 	
+	@Tag(name = "calculatePrima", description = "")
+	@Operation(summary = "Calculate Prima", description = "Calculate Prima in the system")
 	@GetMapping("/calcular")
     public Mono<ResponseEntity<Map<String, Object>>> calcularPrima(@RequestBody Mono<PrimaRequest> request) {
         Map<String, Object> respuesta = new HashMap<>();
@@ -152,18 +163,22 @@ public class PersonController {
 			Mono<Driver> driverMono = personService.driver(vehicle.getDriverId()).switchIfEmpty(Mono.error(new IllegalArgumentException("driver_id no válido")));
 
 			return Mono.zip(vehicleMono, driverMono)
-				.flatMap(tuple -> personService.calcularPrima(vehicle)
-					.map(p -> {
-						respuesta.put("costo_seguro_vehiculo", p);
-						respuesta.put("tmestamp", new Date());
-						
-						return ResponseEntity.badRequest().body(respuesta);
-					})
-				)
+				.flatMap(tuple ->
+					personService.calcularPrima(vehicle)
+						.flatMap(prima ->
+							personService.driverCustom(tuple.getT2().getId(), tuple.getT1().getId())
+								.map(driverDTO -> {
+			                        respuesta.put(Constantes.COSTO_SEGURO_VEHICULO, prima);
+			                        respuesta.put(Constantes.TIMESTAMP, new Date());
+			                        respuesta.put("driverVehicle", driverDTO);
+			                        return ResponseEntity.ok().body(respuesta);
+			                    })
+			            )
+			    )
 				.onErrorResume(e -> {
-					respuesta.put("errors", e.getMessage());
-					respuesta.put("timestamp", new Date());
-					respuesta.put("status", HttpStatus.BAD_REQUEST.value());
+					respuesta.put(Constantes.ERRORS, e.getMessage());
+					respuesta.put(Constantes.TIMESTAMP, new Date());
+					respuesta.put(Constantes.STATUS, HttpStatus.BAD_REQUEST.value());
 					return Mono.just(ResponseEntity.badRequest().body(respuesta));
 				});
 		});

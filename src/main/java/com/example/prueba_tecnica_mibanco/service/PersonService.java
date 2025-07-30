@@ -1,6 +1,7 @@
 package com.example.prueba_tecnica_mibanco.service;
 
 import com.example.prueba_tecnica_mibanco.model.Driver;
+import com.example.prueba_tecnica_mibanco.model.DriverDTO;
 import com.example.prueba_tecnica_mibanco.model.PrimaRequest;
 import com.example.prueba_tecnica_mibanco.model.UsageType;
 import com.example.prueba_tecnica_mibanco.model.Vehicle;
@@ -15,6 +16,7 @@ public interface PersonService {
 	Mono<UsageType> usageTypeName(String name);
 	
 	Flux<Driver> listDrivers();
+	Mono<DriverDTO> driverCustom(Long driverId, Long vehicleId);
 	Mono<Driver> driver(Long driverId);
 	Mono<Driver> altaDriver(Driver driver);
 	Mono<Driver> eliminarDriver(Long driverId);

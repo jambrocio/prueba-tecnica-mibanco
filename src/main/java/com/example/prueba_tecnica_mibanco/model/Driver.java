@@ -1,8 +1,10 @@
 package com.example.prueba_tecnica_mibanco.model;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -38,5 +40,7 @@ public class Driver {
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate fecha_nacimiento;
-	
+
+	@Transient
+	List<Vehicle> vehicles;
 }

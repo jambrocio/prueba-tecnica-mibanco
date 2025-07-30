@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.prueba_tecnica_mibanco.model.Driver;
+import com.example.prueba_tecnica_mibanco.model.DriverDTO;
 import com.example.prueba_tecnica_mibanco.model.PrimaRequest;
 import com.example.prueba_tecnica_mibanco.model.UsageType;
 import com.example.prueba_tecnica_mibanco.model.Vehicle;
@@ -16,7 +17,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class PersonServiceImpl implements PersonService {
-
+	
 	@Autowired
 	private UsageTypeRepository usageTypeRepository;
 	
@@ -33,12 +34,58 @@ public class PersonServiceImpl implements PersonService {
 
 	@Override
 	public Flux<Driver> listDrivers() {
-		return driverRepository.findAll();
+		return driverRepository.findAll().flatMap(driver -> vehicleRepository.findByDriverId(driver.getId())
+				.collectList()
+				.map(vehicles -> {
+					driver.setVehicles(vehicles);
+					return driver;
+				})
+			);
 	}
-
+	
 	@Override
 	public Mono<Driver> driver(Long driverId) {
-		return driverRepository.findById(driverId);
+		return driverRepository.findById(driverId).flatMap(driver -> vehicleRepository.findByDriverId(driver.getId())
+				.collectList()
+				.map(vehicles -> {
+					driver.setVehicles(vehicles);
+					return driver;
+				})
+			);
+	}
+	
+	@Override
+	public Mono<DriverDTO> driverCustom(Long driverId, Long vehicleId) {
+		
+		return driverRepository.findById(driverId)
+			.flatMap(driver -> vehicle(vehicleId)
+				.flatMap(vehicle -> usageType(vehicle.getUsage_type_id())
+					.map(usageType -> {
+						DriverDTO dto = new DriverDTO();
+						dto.setIdDriver(driver.getId());
+						dto.setDni(driver.getDni());
+						dto.setApellido_paterno(driver.getApellido_paterno());
+						dto.setApellido_materno(driver.getApellido_materno());
+						dto.setNombres(driver.getNombres());
+						dto.setEmail(driver.getEmail());
+						dto.setFecha_nacimiento(driver.getFecha_nacimiento());
+						
+						int edad = 0;
+						if (driver.getFecha_nacimiento() != null) {
+							java.time.LocalDate hoy = java.time.LocalDate.now();
+							edad = java.time.Period.between(driver.getFecha_nacimiento(), hoy).getYears();
+						}
+						
+						dto.setEdad(edad);
+						dto.setAnioVehiculo(vehicle.getYear());
+						dto.setMarcaVehiculo(vehicle.getMarca());
+						dto.setTipoUsoVehiculo(usageType != null ? usageType.getName() : "Desconocido");
+						
+						return dto;
+					})
+				)
+			);
+		
 	}
 
 	@Override
@@ -78,9 +125,15 @@ public class PersonServiceImpl implements PersonService {
 
 	@Override
 	public Mono<Double> calcularPrima(PrimaRequest request) {
-		
 		Mono<Driver> driverMono = driverRepository.findById(request.getDriverId());
-		Mono<Vehicle> vehicleMono = vehicleRepository.findById(request.getVehicleId());
+		Mono<Vehicle> vehicleMono = vehicleRepository.findById(request.getVehicleId())
+			.doOnNext(vehicle -> {
+				System.out.println("Vehicle values:");
+				System.out.println("ID: " + vehicle.getId());
+				System.out.println("Year: " + vehicle.getYear());
+				System.out.println("Marca: " + vehicle.getMarca());
+				System.out.println("Usage Type ID: " + vehicle.getUsage_type_id());
+			});
 		Mono<UsageType> usageTypeMono = usageTypeRepository.findByName("CARGA");
 
 		return Mono.zip(driverMono, vehicleMono, usageTypeMono)

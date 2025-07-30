@@ -40,7 +40,7 @@ public class SecurityConfig {
 		.authenticationManager(authenticationManager)
         .securityContextRepository(securityContextRepository)
 		.authorizeExchange(auth -> auth
-				.pathMatchers(HttpMethod.POST, "/driver").hasAnyRole("ADMIN")
+				//.pathMatchers(HttpMethod.POST, "/driver").hasAnyRole("ADMIN")
 				.pathMatchers(HttpMethod.POST, "/vehicle").hasAnyRole("ADMIN")
 				.pathMatchers(HttpMethod.DELETE, "/eliminar/**").hasAnyRole("ADMIN", "OPERATOR")
 				//.pathMatchers("/productos/**").authenticated()

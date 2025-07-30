@@ -45,7 +45,7 @@ class PruebaTecnicaMibancoApplicationTests {
 					System.out.println("nombre tipo uso : " + p.getName());
 				});
 				
-				Assertions.assertThat(usageTypes.size() > 0).isTrue();
+				Assertions.assertThat(usageTypes).isNotEmpty();
 			});
 	}
 	
@@ -64,7 +64,6 @@ class PruebaTecnicaMibancoApplicationTests {
 			.expectBody(UsageType.class)
 			.consumeWith(response -> {
 				UsageType p = response.getResponseBody();
-				//Assertions.assertThat(p.getId().longValue() > 0).isTrue();
 				Assertions.assertThat(p.getName()).isEqualTo(nameUsageType);
 			});
 			
@@ -85,8 +84,7 @@ class PruebaTecnicaMibancoApplicationTests {
 				drivers.forEach(p -> {
 					System.out.println("driver : " + p.getApellido_paterno() + " " + p.getApellido_materno() + " " + p.getNombres());
 				});
-				
-				Assertions.assertThat(drivers.size() > 0).isTrue();
+				Assertions.assertThat(drivers).isNotEmpty();
 			});
 	}
 	

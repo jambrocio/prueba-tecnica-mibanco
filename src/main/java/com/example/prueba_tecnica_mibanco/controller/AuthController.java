@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.prueba_tecnica_mibanco.model.Credentials;
+import com.example.prueba_tecnica_mibanco.util.Constantes;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -30,7 +31,7 @@ import reactor.core.publisher.Mono;
 public class AuthController {
 	
 	@Value("${clave}")
-	String CLAVE;
+	String principalWord;
 	
 	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 	private static final long TIEMPO_VIDA=85_000_000;//aproximadamente 1 dia
@@ -53,9 +54,9 @@ public class AuthController {
 	            .map(details -> 
 	            {
 	            	Map<String, String> body = new HashMap<>();
-	                body.put("token", getToken(details));
+	                body.put(Constantes.TOKEN, getToken(details));
 	                body.put("username", credentials.getUser());
-	                body.put("message", String.format("Hola %s has iniciado sesion con exito", credentials.getUser()));
+	                body.put(Constantes.MESSAGE, String.format("Hola %s has iniciado sesion con exito", credentials.getUser()));
 	                
 	            	return new ResponseEntity<>(body,HttpStatus.OK);
 	            })
@@ -80,7 +81,7 @@ public class AuthController {
 								.map(GrantedAuthority::getAuthority)
 								.collect(Collectors.toList()))
 				.expiration(new Date(System.currentTimeMillis() + TIEMPO_VIDA)) //fecha caducidad
-				.signWith(Keys.hmacShaKeyFor(CLAVE.getBytes()))//clave y algoritmo para firma
+				.signWith(Keys.hmacShaKeyFor(principalWord.getBytes()))//principalWord y algoritmo para firma
 				//.signWith(Jwts.SIG.HS256.key().build())//clave y algoritmo para firma
 				.compact(); //generación del token
 		

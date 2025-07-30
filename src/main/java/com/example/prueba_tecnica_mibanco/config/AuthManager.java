@@ -22,9 +22,7 @@ implementación de Authentication
 public class AuthManager implements ReactiveAuthenticationManager {
 	
 	@Value("${clave}")
-	String CLAVE;
-	
-	//Claims claims = Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
+	String principalWord;
 	
 	@Override
 	public Mono<Authentication> authenticate(Authentication authentication) {
@@ -34,8 +32,7 @@ public class AuthManager implements ReactiveAuthenticationManager {
     	//a partir del usuario y roles del token
     	  return Mono.just(authentication)
     			  .map(auth->Jwts.parser()
-    					 .verifyWith(Keys.hmacShaKeyFor(CLAVE.getBytes()))
-    					 //.verifyWith(Jwts.SIG.HS256.key().build())
+    					 .verifyWith(Keys.hmacShaKeyFor(principalWord.getBytes()))
     					 .build()
     					 .parseSignedClaims(auth.getCredentials().toString().replace("Bearer ", ""))
     					 .getPayload())//Mono<Claims>
