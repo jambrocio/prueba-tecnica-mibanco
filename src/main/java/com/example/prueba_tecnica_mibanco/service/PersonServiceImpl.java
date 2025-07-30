@@ -1,5 +1,7 @@
 package com.example.prueba_tecnica_mibanco.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class PersonServiceImpl implements PersonService {
+	
+	private static final Logger log = LoggerFactory.getLogger(PersonServiceImpl.class);
 	
 	@Autowired
 	private UsageTypeRepository usageTypeRepository;
@@ -128,11 +132,11 @@ public class PersonServiceImpl implements PersonService {
 		Mono<Driver> driverMono = driverRepository.findById(request.getDriverId());
 		Mono<Vehicle> vehicleMono = vehicleRepository.findById(request.getVehicleId())
 			.doOnNext(vehicle -> {
-				System.out.println("Vehicle values:");
-				System.out.println("ID: " + vehicle.getId());
-				System.out.println("Year: " + vehicle.getYear());
-				System.out.println("Marca: " + vehicle.getMarca());
-				System.out.println("Usage Type ID: " + vehicle.getUsage_type_id());
+				log.info("Vehicle values:");
+				log.info("ID: " + vehicle.getId());
+				log.info("Year: " + vehicle.getYear());
+				log.info("Marca: " + vehicle.getMarca());
+				log.info("Usage Type ID: " + vehicle.getUsage_type_id());
 			});
 		Mono<UsageType> usageTypeMono = usageTypeRepository.findByName("CARGA");
 

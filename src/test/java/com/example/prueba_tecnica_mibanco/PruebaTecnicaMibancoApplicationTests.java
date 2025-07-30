@@ -6,6 +6,8 @@ import java.util.Random;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +25,8 @@ import reactor.core.publisher.Mono;
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 class PruebaTecnicaMibancoApplicationTests {
 
+	private static final Logger log = LoggerFactory.getLogger(PruebaTecnicaMibancoApplicationTests.class);
+	
 	@Autowired
 	private WebTestClient client;
 	
@@ -41,8 +45,9 @@ class PruebaTecnicaMibancoApplicationTests {
 			//.hasSize(10)
 			.consumeWith(response -> {
 				List<UsageType> usageTypes = response.getResponseBody();
+				log.info("UsageType values:");
 				usageTypes.forEach(p -> {
-					System.out.println("nombre tipo uso : " + p.getName());
+					log.info("Name: " + p.getName());
 				});
 				
 				Assertions.assertThat(usageTypes).isNotEmpty();
@@ -81,8 +86,9 @@ class PruebaTecnicaMibancoApplicationTests {
 			//.hasSize(10)
 			.consumeWith(response -> {
 				List<Driver> drivers = response.getResponseBody();
+				log.info("Driver values:");
 				drivers.forEach(p -> {
-					System.out.println("driver : " + p.getApellido_paterno() + " " + p.getApellido_materno() + " " + p.getNombres());
+					log.info("Driver: " + p.getDni() + " => " + p.getApellido_paterno() + " " + p.getApellido_materno() + " " + p.getNombres());
 				});
 				Assertions.assertThat(drivers).isNotEmpty();
 			});
@@ -122,7 +128,7 @@ class PruebaTecnicaMibancoApplicationTests {
 			.expectBody()
 			.jsonPath("$.token").value(tokenValue -> {
 				Assertions.assertThat(tokenValue).isInstanceOf(String.class);
-				System.out.println("TOKEN: " + tokenValue);
+				log.info("Token: " + tokenValue);
 			})
 			.returnResult().getResponseBody().toString();
 		

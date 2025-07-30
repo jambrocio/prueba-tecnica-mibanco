@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,6 +35,8 @@ import reactor.core.publisher.Mono;
 @RestController
 public class PersonController {
 
+	private static final Logger log = LoggerFactory.getLogger(PersonController.class);
+	
 	@Autowired
 	private PersonService personService;
 	
@@ -91,8 +95,6 @@ public class PersonController {
 					.body(respuesta);
 			});
 		}).onErrorResume(t -> {
-			
-			System.out.println(t);
 			
 			return Mono.just(t).cast(WebExchangeBindException.class)
 					.flatMap(e -> Mono.just(e.getFieldErrors()))
