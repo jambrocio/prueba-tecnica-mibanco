@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+   mibanco_db:
+      image: postgres:17 # Using a specific PostgreSQL version
+      container_name: mibanco_db
+      restart: always
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=virgo1984
+        - POSTGRES_DB=mibanco
+      healthcheck:
+         test: ["CMD-SHELL", "pg_isready -U postgres -d virgo1984"]
+         interval: 10s
+         retries: 5
+         start_period: 30s
+         timeout: 10s
+      ports:
+      - "5441:5432"
+      volumes:
+        - mibanco_postgres_data:/var/lib/postgresql/data
+      networks:
+        - app_network
+
+   redis:
+      image: redis:latest # Using the latest Redis image
+      container_name: redis
+      ports:
+      - "6379:6379" # Expose Redis default port
+      networks:
+      - app_network
+
+networks:
+   app_network:
+      driver: bridge
+
+volumes:
+   postgres_data:
+   mibanco_postgres_data:
+   
