@@ -42,7 +42,7 @@ public class AuthController {
 		this.detailsService = detailsService;
 	}
 	
-	@Tag(name = "login", description = "")
+	@Tag(name = "Login", description = "")
 	@Operation(summary = "Authentication", description = "Authentication in the system")
 	@PostMapping(value="login", consumes = MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
 	public Mono<ResponseEntity<Map<String, String>>> login(@RequestBody Credentials credentials){

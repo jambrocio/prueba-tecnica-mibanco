@@ -36,42 +36,42 @@ public class PersonController {
 	@Autowired
 	private PersonService personService;
 	
-	@Tag(name = "listUsageTypes", description = "")
+	@Tag(name = "UsageType", description = "")
 	@Operation(summary = "List Usage Types", description = "List Usage Types")
 	@GetMapping(value="usageTypes")
 	public ResponseEntity<Flux<UsageType>> listUsageType(){
 		return new ResponseEntity<>(personService.listUsageType(),HttpStatus.OK);
 	}
 	
-	@Tag(name = "findUsageType", description = "")
+	@Tag(name = "UsageType", description = "")
 	@Operation(summary = "Find a usage type", description = "Find a usage type in the system")
 	@GetMapping(value="usageType/{id}")
 	public ResponseEntity<Mono<UsageType>> usageType(@PathVariable String id){
 		return new ResponseEntity<>(personService.usageType(Long.valueOf(id)),HttpStatus.OK);
 	}
 	
-	@Tag(name = "listDrivers", description = "")
+	@Tag(name = "Driver", description = "")
 	@Operation(summary = "List drivers", description = "List drivers")
 	@GetMapping(value="drivers")
 	public ResponseEntity<Flux<Driver>> drivers(){
 		return new ResponseEntity<>(personService.listDrivers(),HttpStatus.OK);
 	}
 	
-	@Tag(name = "findDriver", description = "")
+	@Tag(name = "Driver", description = "")
 	@Operation(summary = "Find a driver", description = "Find a driver in the system")
 	@GetMapping(value="driver/{id}")
 	public ResponseEntity<Mono<Driver>> driver(@PathVariable String id){
 		return new ResponseEntity<>(personService.driver(Long.valueOf(id)),HttpStatus.OK);
 	}
 	
-	@Tag(name = "findDriverVehicle", description = "")
+	@Tag(name = "Driver", description = "")
 	@Operation(summary = "Find a driver and vehicle", description = "Find a driver and vehicle in the system")
 	@GetMapping(value="driver/{idDriver}/vehicle/{idVehicle}")
 	public ResponseEntity<Mono<DriverDTO>> driverVehicle(@PathVariable String idDriver, @PathVariable String idVehicle){
 		return new ResponseEntity<>(personService.driverCustom(Long.valueOf(idDriver), Long.valueOf(idVehicle)),HttpStatus.OK);
 	}
 	
-	@Tag(name = "createDriver", description = "")
+	@Tag(name = "Driver", description = "")
 	@Operation(summary = "Create a new driver", description = "Add a new driver to the system")
 	@PostMapping(value="driver",consumes=MediaType.APPLICATION_JSON_VALUE)
 	public Mono<ResponseEntity<Map<String, Object>>> altaDriver(@Valid @RequestBody Mono<Driver> monoDriver) {
@@ -108,14 +108,14 @@ public class PersonController {
 				
 	}
 	
-	@Tag(name = "findVehicle", description = "")
+	@Tag(name = "Vehicle", description = "")
 	@Operation(summary = "Find a vehicle", description = "Find a vehicle in the system")
 	@GetMapping(value="vehicle/{id}")
 	public ResponseEntity<Mono<Vehicle>> vehicle(@PathVariable String id){
 		return new ResponseEntity<>(personService.vehicle(Long.valueOf(id)),HttpStatus.OK);
 	}
 	
-	@Tag(name = "createVehicle", description = "")
+	@Tag(name = "Vehicle", description = "")
 	@Operation(summary = "Create a new vehicle", description = "Add a new vehicle to the system")
 	@PostMapping(value="vehicle",consumes=MediaType.APPLICATION_JSON_VALUE)
 	public Mono<ResponseEntity<Map<String, Object>>> altaVehicle(@Valid @RequestBody Mono<Vehicle> monoVehicle) {
@@ -149,7 +149,7 @@ public class PersonController {
 
 	}
 	
-	@Tag(name = "calculatePrima", description = "")
+	@Tag(name = "Prima", description = "")
 	@Operation(summary = "Calculate Prima", description = "Calculate Prima in the system")
 	@PostMapping("/calcular")
     public Mono<ResponseEntity<Map<String, Object>>> calcularPrima(@RequestBody Mono<PrimaRequest> request) {
