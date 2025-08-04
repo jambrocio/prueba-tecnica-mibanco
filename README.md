@@ -4,21 +4,19 @@
 
 http://localhost:8099/swagger-ui-custom.html
 
-## Configuracion Bd (application.properties)
+## Configuracion de variables de entorno (.env)
 
-spring.r2dbc.url=r2dbc:postgresql://localhost:5441/mibanco<br>
-spring.r2dbc.username=postgres<br>
-spring.r2dbc.password=xxxxxxxx
+POSTGRES_DB=mibanco<br>
+POSTGRES_USER=postgres<br>
+POSTGRES_PASSWORD=xxxxxxxxxxxx<br>
+POSTGRES_HOST=localhost<br>
+POSTGRES_PORT=5441<br>
 
-## Levantar bd con docker compose
-
-Ubicarse en el directorio del proyecto y por consola ejecutar el siguiente comando:
-
-```
-docker-compose up -d
-```
+**Nota:** el cambio de dichos valores servira para la configuracion de bd y docker compose
 
 ## Ejecucion script bd(data.sql y schema.sql)
+
+Se ejecuta de manera automatica al inicializar la aplicacion.
 
 - **schema.sql**, creacion de tablas
 - **data.sql**, registro de datos de prueba
